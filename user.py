@@ -17,7 +17,7 @@ class User(ABC):
         self.username = username
 
     @staticmethod
-    def find_similar_interests(user1, user2):
+    def find_similar_interests(user1, user2, num_interests=10):
         common_interests = {}
         for interest in user1.interests:
             if interest in user2.interests:
@@ -25,7 +25,7 @@ class User(ABC):
                 common_interests[interest] = value
         # Select the top five interests
         top = {}
-        for i in range(10):
+        for i in range(num_interests):
             max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]
             print(max_key)
             top[max_key] = common_interests[max_key]

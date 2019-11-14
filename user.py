@@ -1,3 +1,4 @@
+import operator
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 import re
@@ -14,6 +15,22 @@ class User(ABC):
 
     def __init__(self, username):
         self.username = username
+
+    @staticmethod
+    def find_similar_interests(user1, user2):
+        common_interests = {}
+        for interest in user1.interests:
+            if interest in user2.interests:
+                value = user1.interests[interest] + user2.interests[interest]
+                common_interests[interest] = value
+        # Select the top five interests
+        top = {}
+        for i in range(10):
+            max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]
+            print(max_key)
+            top[max_key] = common_interests[max_key]
+            del common_interests[max_key]
+        return top
 
     def preprocess_data(self, text):
         if text is not None:

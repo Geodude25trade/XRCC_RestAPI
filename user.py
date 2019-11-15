@@ -23,7 +23,22 @@ class User(ABC):
             if interest in user2.interests:
                 value = user1.interests[interest] + user2.interests[interest]
                 common_interests[interest] = value
-        # Select the top five interests
+        # Select the top n interests
+        top = {}
+        for i in range(num_interests):
+            max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]
+            print(max_key)
+            top[max_key] = common_interests[max_key]
+            del common_interests[max_key]
+        return top
+
+    @staticmethod
+    def top_n_interests(user1, num_interests=10):
+        common_interests = {}
+        for interest in user1.interests:
+            value = user1.interests[interest]
+            common_interests[interest] = value
+        # Select the top n interests
         top = {}
         for i in range(num_interests):
             max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]

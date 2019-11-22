@@ -32,3 +32,23 @@
   ```
   python setup.py
   ```
+## Starting the Server
+1. To start the server, type the following command while the virtual environment is active:
+
+  ```
+  waitress-serve --call app:create_app
+  ```
+
+  _The server may take several minutes to start up and even longer if the word2vec model has not yet been downloaded_
+## Interacting with the server
+  To interact with the server, use either Postman or some equivalent to POST JSON objects to the various routes. The format of each object and its associated route is outlined below.
+  
+    ```javascript
+    {
+      "algorithm": "[empath | wfc | chi-squared]",
+      "username": "[twitter handle]",
+      "newTweets": "[bool; true if force new tweet scrape]",
+      "numTweets": "[int; number of tweets to fetch]",
+      "numInterests": "[int; number of interests to return]"
+    }
+    ```

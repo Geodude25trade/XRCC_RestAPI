@@ -9,94 +9,106 @@ import emoji2vector
 import os
 import getEmojis
 
-app = Flask(__name__)
-api = Api(app)
 
+def create_app():
+    application = Flask(__name__)
+    api = Api(application)
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
+    @application.route('/')
+    def hello_world():
+        return 'Hello World!'
 
+    class UserDataRequest(Resource):
+        def post(self):
+            settings = request.get_json()
+            print(settings)
+            algorithm = settings['algorithm']
+            username = settings['username']
+            new_tweets = settings['newTweets']
+            num_tweets = settings['numTweets']
+            num_interests = settings['numInterests']
+            algorithm = algorithm.lower()
+            if algorithm is not None and username is not None:
+                if algorithm in "chi-squared":
+                    person = ChiUser(username)
+                if algorithm in "wfc":
+                    person = WFCUser(username)
+                if algorithm in "empath":
+                    person = EmpUser(username)
+                analyzeUser.analyze_user(person, num_tweets, new_tweets)
+                top_interests = User.top_n_interests(person, num_interests)
+                result = []
+                for interest in top_interests:
+                    data_point = {'name': interest, 'score': top_interests[interest]}
+                    emoji = emoji2vector.find_closest_emoji(interest, 1)
+                    if emoji is not None:
+                        data_point['emoji'] = emoji[0][0]
+                        data_point['emojiScore'] = emoji[0][1]
+                    result.append(data_point)
 
-class UserDataRequest(Resource):
-    def post(self):
-        settings = request.get_json()
-        algorithm = settings['algorithm']
-        username = settings['username']
-        new_tweets = settings['newtweets']
-        num_tweets = settings['numtweets']
-        algorithm = algorithm.lower()
-        if algorithm is not None and username is not None:
-            if algorithm in "chi-squared":
-                person = ChiUser(username)
-            if algorithm in "wfc":
-                person = WFCUser(username)
-            if algorithm in "empath":
-                person = EmpUser(username)
-            analyzeUser.analyze_user(person, num_tweets, new_tweets)
-            top_interests = User.top_n_interests(person)
-            for interest in top_interests:
-                count = top_interests[interest]
-                top_interests[interest] = {}
-                top_interests[interest]['count'] = count
-                emoji = emoji2vector.find_closest_emoji(interest)
-                if emoji is not None:
-                    top_interests[interest]['emoji'] = emoji[0][0]
-                    top_interests[interest]['emoji_score'] = emoji[0][1]
+                return result
+            return "<h1>Error</h1>"
 
-            return top_interests
-        return "<h1>Error</h1>"
+    class UserComparisonRequest(Resource):
+        def post(self):
+            settings = request.get_json()
+            algorithm = settings['algorithm']
+            user1 = settings['user1']
+            user2 = settings['user2']
+            new_tweets = settings['newTweets']
+            num_tweets = settings['numTweets']
+            num_interests = settings['numInterests']
+            algorithm = algorithm.lower()
+            if algorithm is not None and user1 is not None and user2 is not None:
+                if algorithm in "chi-squared":
+                    user1 = ChiUser(user1)
+                    user2 = ChiUser(user2)
+                if algorithm in "wfc":
+                    user1 = WFCUser(user1)
+                    user2 = WFCUser(user2)
+                if algorithm in "empath":
+                    user1 = EmpUser(user1)
+                    user2 = EmpUser(user2)
+                analyzeUser.analyze_user(user1, num_tweets, new_tweets)
+                analyzeUser.analyze_user(user2, num_tweets, new_tweets)
+                similar_interests = User.find_similar_interests(user1, user2, num_interests)
+                for interest in similar_interests:
+                    score = similar_interests[interest]
+                    similar_interests[interest] = {}
+                    similar_interests[interest]['score'] = score
+                    emoji = emoji2vector.find_closest_emoji(interest, 1)
+                    if emoji is not None:
+                        similar_interests[interest]['emoji'] = emoji[0][0]
+                        similar_interests[interest]['emojiScore'] = emoji[0][1]
+                return similar_interests
+            return "<h1>Error</h1>"
 
+    class EmojiImageRequest(Resource):
+        def post(self):
+            settings = request.get_json()
+            emoji = settings['emoji']
+            filename = os.path.dirname(f"data/emojis/{emoji}.png")
+            if os.path.exists(filename):
+                return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
+            else:
+                getEmojis.get_emojis(emoji)
+                return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
 
-class UserComparisonRequest(Resource):
-    def post(self):
-        settings = request.get_json()
-        algorithm = settings['algorithm']
-        user1 = settings['user1']
-        user2 = settings['user2']
-        new_tweets = settings['newtweets']
-        num_tweets = settings['numtweets']
-        algorithm = algorithm.lower()
-        if algorithm is not None and user1 is not None and user2 is not None:
-            if algorithm in "chi-squared":
-                user1 = ChiUser(user1)
-                user2 = ChiUser(user2)
-            if algorithm in "wfc":
-                user1 = WFCUser(user1)
-                user2 = WFCUser(user2)
-            if algorithm in "empath":
-                user1 = EmpUser(user1)
-                user2 = EmpUser(user2)
-            analyzeUser.analyze_user(user1, num_tweets, new_tweets)
-            analyzeUser.analyze_user(user2, num_tweets, new_tweets)
-            similar_interests = User.find_similar_interests(user1, user2)
-            for interest in similar_interests:
-                count = similar_interests[interest]
-                similar_interests[interest] = {}
-                similar_interests[interest]['count'] = count
-                emoji = emoji2vector.find_closest_emoji(interest)
-                if emoji is not None:
-                    similar_interests[interest]['emoji'] = emoji[0][0]
-                    similar_interests[interest]['emoji_score'] = emoji[0][1]
-            return similar_interests
-        return "<h1>Error</h1>"
+    class NearestEmojisRequest(Resource):
+        def post(self):
+            settings = request.get_json()
+            word = settings['word']
+            number = settings['number']
+            return emoji2vector.find_closest_emoji(word, number)
 
+    api.add_resource(UserDataRequest, '/user/')
+    api.add_resource(UserComparisonRequest, '/compare/')
+    api.add_resource(EmojiImageRequest, '/emojis/')
+    api.add_resource(NearestEmojisRequest, '/closest/')
 
-class EmojiImageRequest(Resource):
-    def post(self):
-        settings = request.get_json()
-        emoji = settings['emoji']
-        filename = os.path.dirname(f"data/emojis/{emoji}.png")
-        if os.path.exists(filename):
-            return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
-        else:
-            getEmojis.get_emojis(emoji)
-            return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
+    return application
 
-
-api.add_resource(UserDataRequest, '/user/')
-api.add_resource(UserComparisonRequest, '/compare/')
-api.add_resource(EmojiImageRequest, '/emojis/')
 
 if __name__ == '__main__':
+    app = create_app()
     app.run()

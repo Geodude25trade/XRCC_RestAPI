@@ -50,10 +50,10 @@ def train_emoji_vectors():
         file.write(text)
 
 
-def find_closest_emoji(word):
+def find_closest_emoji(word, num):
     if word in word2vec_model300.vocab:
         vector = word2vec_model300.word_vec(word)
-        return emoji_vector_model.similar_by_vector(vector, topn=1)
+        return emoji_vector_model.similar_by_vector(vector, topn=num)
     else:
         return None
 

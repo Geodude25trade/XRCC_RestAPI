@@ -43,12 +43,35 @@
 ## Interacting with the server
   To interact with the server, use either Postman or some equivalent to POST JSON objects to the various routes. The format of each object and its associated route is outlined below.
   
-    ```javascript
-    {
-      "algorithm": "[empath | wfc | chi-squared]",
-      "username": "[twitter handle]",
-      "newTweets": "[bool; true if force new tweet scrape]",
-      "numTweets": "[int; number of tweets to fetch]",
-      "numInterests": "[int; number of interests to return]"
-    }
-    ```
+```JSON
+{
+  "algorithm": "[empath | wfc | chi-squared]",
+  "username": "[twitter handle]",
+  "newTweets": [bool; true if force new tweet scrape],
+  "numTweets": [int; number of tweets to fetch],
+  "numInterests": [int; number of interests to return]
+}
+```
+
+```JSON
+{
+  "algorithm": "[empath | wfc | chi-squared]",
+  "user1": "[twitter handle]",
+  "user2": "[twitter handle]",
+  "newTweets": [bool; true if force new tweet scrape],
+  "numTweets": [int; number of tweets to fetch],
+  "numInterests": [int; number of interests to return]
+}
+
+```JSON
+{
+  "word": "[The word to find closest emojis to]",
+  "number": [int; number of closest to return]
+}
+```
+
+```JSON
+{
+  "emoji": "[name of the emoji to return a png for]"
+}
+```

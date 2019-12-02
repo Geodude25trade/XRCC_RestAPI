@@ -5,6 +5,7 @@ from user import User
 from chiUser import ChiUser
 from empUser import EmpUser
 from wfcUser import WFCUser
+from bayesUser import BayesUser
 import emoji2vector
 import os
 import getEmojis
@@ -35,6 +36,8 @@ def create_app():
                     person = WFCUser(username)
                 if algorithm in "empath":
                     person = EmpUser(username)
+                if algorithm in "bayes":
+                    person = BayesUser(username)
                 analyzeUser.analyze_user(person, num_tweets, new_tweets)
                 top_interests = User.top_n_interests(person, num_interests)
                 result = []
@@ -69,6 +72,9 @@ def create_app():
                 if algorithm in "empath":
                     user1 = EmpUser(user1)
                     user2 = EmpUser(user2)
+                if algorithm in "bayes":
+                    user1 = BayesUser(user1)
+                    user2 = BayesUser(user2)
                 analyzeUser.analyze_user(user1, num_tweets, new_tweets)
                 analyzeUser.analyze_user(user2, num_tweets, new_tweets)
                 similar_interests = User.find_similar_interests(user1, user2, num_interests)

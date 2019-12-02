@@ -1,9 +1,12 @@
 import argparse
 from empUser import EmpUser
+from wfcUser import WFCUser
 from chiUser import ChiUser
+from bayesUser import BayesUser
 import twitterHandler
 from getEmojis import get_emojis
-import userTableGenerator
+import chiSquaredModel
+import bayesModel
 import sys
 
 
@@ -28,8 +31,14 @@ def analyze_user(person, num_of_tweets=2000, force_new_tweets=False, emojis=Fals
     # user.print_words()
     if isinstance(person, ChiUser):
         print(f"Working statistical analysis for {person.username}")
-        userTableGenerator.add_user(person)
-        userTableGenerator.calculate_user(person)
+        chiSquaredModel.add_user(person)
+        chiSquaredModel.calculate_user(person)
+    elif isinstance(person, BayesUser):
+        print(f"Working statistical analysis for {person.username}")
+        bayesModel.add_user(person)
+        bayesModel.calculate_user(person)
+    else:
+        person.add_interests(person.words)
     # user.print_interests()
     if emojis:
         print(f"Getting emojis for {person.username}")
@@ -73,8 +82,10 @@ if __name__ == "__main__":
     if args.analyzer == "empath":
         user = EmpUser(args.username)
     elif args.analyzer == "wfc":
+        user = WFCUser(args.username)
+    elif args.analyzer == "chi-squared":
         user = ChiUser(args.username)
     else:
-        user = ChiUser(args.username)
+        user = BayesUser(args.username)
 
     analyze_user(user, args.tweet_num, args.force, args.emojis)

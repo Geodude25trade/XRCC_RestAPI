@@ -17,6 +17,16 @@ class User(ABC):
         self.username = username
 
     @staticmethod
+    def get_top_n(data, num):
+        top = {}
+        for i in range(num):
+            max_key = max(data.items(), key=operator.itemgetter(1))[0]
+            print(max_key)
+            top[max_key] = data[max_key]
+            del data[max_key]
+        return top
+
+    @staticmethod
     def find_similar_interests(user1, user2, num_interests=10):
         common_interests = {}
         for interest in user1.interests:
@@ -24,28 +34,16 @@ class User(ABC):
                 value = user1.interests[interest] + user2.interests[interest]
                 common_interests[interest] = value
         # Select the top n interests
-        top = {}
-        for i in range(num_interests):
-            max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]
-            print(max_key)
-            top[max_key] = common_interests[max_key]
-            del common_interests[max_key]
-        return top
+        return User.get_top_n(common_interests, num_interests)
 
     @staticmethod
     def top_n_interests(user1, num_interests=10):
-        common_interests = {}
+        interests = {}
         for interest in user1.interests:
             value = user1.interests[interest]
-            common_interests[interest] = value
+            interests[interest] = value
         # Select the top n interests
-        top = {}
-        for i in range(num_interests):
-            max_key = max(common_interests.items(), key=operator.itemgetter(1))[0]
-            print(max_key)
-            top[max_key] = common_interests[max_key]
-            del common_interests[max_key]
-        return top
+        return User.get_top_n(interests, num_interests)
 
     def preprocess_data(self, text):
         if text is not None:
@@ -96,7 +94,7 @@ class User(ABC):
 
     def save_user_data(self):
         # Create object to store in JSON
-        user_obj = {"username": self.username, "words": self.words, "tweets": self.tweets,
+        user_obj = {"username": self.username, "words": self.words,
                     "emojis": self.emojis, "interests": self.interests}
         tweets = {"tweets": self.tweets}
         # Try to make the directory first if it doesn't already exist
@@ -159,6 +157,11 @@ class User(ABC):
         if 'tweets' in tweets:
             print("GOT THE TWEETS")
             self.tweets = tweets["tweets"]
+        elif 'tweets' in user_obj:
+            print("GOT THE TWEETS")
+            self.tweets = user_obj["tweets"]
+        else:
+            print("There seem to be no tweets")
         if 'emojis' in user_obj:
             self.emojis = user_obj["emojis"]
         return True

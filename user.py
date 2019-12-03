@@ -126,6 +126,9 @@ class User(ABC):
                 print(err)
 
     def load_user_data(self):
+
+        successful = False
+
         # Load the interests JSON and set to self.interests
         user_obj = {}
         tweets = {}
@@ -133,19 +136,15 @@ class User(ABC):
             with open("data/people/" + self.username + "/" + self.username + "." + type(self).__name__ + ".json",
                       "r") as data:
                 user_obj = json.load(data)
-        except IOError as err:
-            print(err)
-            try:
-                with open("data/people/" + self.username + "/" + self.username + ".json", "r") as data:
-                    user_obj = json.load(data)
-            except IOError as err:
-                print(err)
-                return False
+            successful = True
+        except IOError:
+            successful = False
         try:
             with open("data/people/" + self.username + "/" + self.username + ".tweets.json", "r") as tweet_data:
                 tweets = json.load(tweet_data)
-        except IOError as err:
-            print(err)
+            successful = True
+        except IOError:
+            successful = False
 
         # Assign values from load to fields
         if 'usersname' in user_obj:
@@ -164,4 +163,4 @@ class User(ABC):
             print("There seem to be no tweets")
         if 'emojis' in user_obj:
             self.emojis = user_obj["emojis"]
-        return True
+        return successful

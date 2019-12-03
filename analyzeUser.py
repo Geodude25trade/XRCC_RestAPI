@@ -63,8 +63,8 @@ if __name__ == "__main__":
                         action="store",
                         type=str,
                         nargs="?",
-                        default="wfc",
-                        const="empath",
+                        default="chi-squared",
+                        const="bayes",
                         help="Use the empath version of interest extraction (default: Word Frequency Counter analyzer)")
     parser.add_argument("-f",
                         "--force-get-tweets",
@@ -83,9 +83,9 @@ if __name__ == "__main__":
         user = EmpUser(args.username)
     elif args.analyzer == "wfc":
         user = WFCUser(args.username)
-    elif args.analyzer == "chi-squared":
-        user = ChiUser(args.username)
-    else:
+    elif args.analyzer == "bayes":
         user = BayesUser(args.username)
+    else:
+        user = ChiUser(args.username)
 
     analyze_user(user, args.tweet_num, args.force, args.emojis)

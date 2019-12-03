@@ -109,7 +109,8 @@ def calculate_user(person):
 
         # For each word, calculate its Chi-Squared Contribution
         for word in person.words:
-            score = (float(model['users'][person.username]['words'][word]) / float(model['words'][word]['totalx']))
+            score = (float(model['users'][person.username]['words'][word]) * float(model['totalxy'])) / (
+                        float(model['words'][word]['totalx']) * float(model['users'][person.username]['totaly']))
             interests[word] = score
 
         # Add the interests to the user object and print the interests

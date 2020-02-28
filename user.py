@@ -37,9 +37,9 @@ class User(ABC):
         common_interests = {}
 
         for interest in user1.interests:
-            interests_1[interest] = (user1.interests[interest] / max_val_1)**2
+            interests_1[interest] = (user1.interests[interest] / max_val_1)
         for interest in user2.interests:
-            interests_2[interest] = (user2.interests[interest] / max_val_2)**2
+            interests_2[interest] = (user2.interests[interest] / max_val_2)
         for interest in interests_1:
             if interest in interests_2:
                 common_interests[interest] = interests_1[interest] * interests_2[interest]

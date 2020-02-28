@@ -33,7 +33,7 @@ class User(ABC):
         interests_1 = {}
         interests_2 = {}
         max_val_1 = list(User.top_n_interests(user1, 1).values())[0]
-        max_val_2 = list(User.top_n_interests(user1, 1).values())[0]
+        max_val_2 = list(User.top_n_interests(user2, 1).values())[0]
         common_interests = {}
 
         for interest in user1.interests:

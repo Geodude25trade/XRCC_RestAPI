@@ -12,6 +12,7 @@ class User(ABC):
     interests = OrderedDict()
     tweets = ""
     emojis = OrderedDict()
+    metrics = {}
 
     def __init__(self, username):
         self.username = username
@@ -19,20 +20,32 @@ class User(ABC):
     @staticmethod
     def get_top_n(data, num):
         top = {}
+        data_copy = data.copy()
         for i in range(num):
-            max_key = max(data.items(), key=operator.itemgetter(1))[0]
-            print(max_key)
-            top[max_key] = data[max_key]
-            del data[max_key]
+            if len(data_copy) > 0:
+                max_key = max(data_copy.items(), key=operator.itemgetter(1))[0]
+                top[max_key] = data_copy[max_key]
+                del data_copy[max_key]
         return top
 
     @staticmethod
     def find_similar_interests(user1, user2, num_interests=10):
+        interests_1 = {}
+        interests_2 = {}
+        max_val_1 = list(User.top_n_interests(user1, 1).values())[0]
+        max_val_2 = list(User.top_n_interests(user1, 1).values())[0]
         common_interests = {}
+
         for interest in user1.interests:
-            if interest in user2.interests:
-                value = user1.interests[interest] + user2.interests[interest]
-                common_interests[interest] = value
+            interests_1[interest] = user1.interests[interest] / max_val_1
+        for interest in user2.interests:
+            interests_2[interest] = user2.interests[interest] / max_val_2
+        print(interests_1)
+        print(interests_2)
+        for interest in interests_1:
+            if interest in interests_2:
+                common_interests[interest] = interests_1[interest] * interests_2[interest]
+        print(common_interests)
         # Select the top n interests
         return User.get_top_n(common_interests, num_interests)
 
@@ -53,7 +66,12 @@ class User(ABC):
             return
 
         # Clean the text saving only letters and white space
-        return re.sub(r"[^a-zA-Z\s]+", " ", self.tweets)
+        http_free = re.sub(
+            r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)",
+            " ", self.tweets)
+        url_free = re.sub(r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)", " ",
+                          http_free)
+        return re.sub(r"[^a-zA-Z\s]+", " ", url_free)
 
     @abstractmethod
     def process_data(self, clean):
@@ -104,11 +122,11 @@ class User(ABC):
         try:
             os.makedirs(directory)
         except IOError as err:
-            print(err)
+            err
         try:
             os.makedirs(tweets_dir)
         except IOError as err:
-            print(err)
+            err
         # Save the user interests to a JSON file
         if self.words is not None:
             try:
@@ -116,14 +134,14 @@ class User(ABC):
                           "w") as file:
                     json.dump(user_obj, file)
             except IOError as err:
-                print(err)
+                err
         if self.tweets is not None:
             try:
                 with open("data/people/" + self.username + "/" + self.username + ".tweets.json",
                           "w") as file:
                     json.dump(tweets, file)
             except IOError as err:
-                print(err)
+                err
 
     def load_user_data(self):
 

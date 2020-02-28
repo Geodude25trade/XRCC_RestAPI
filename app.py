@@ -1,14 +1,15 @@
 from flask import Flask, request, send_file
 from flask_restplus import Resource, Api
-import analyzeUser
+import analyzeuser
 from user import User
-from chiUser import ChiUser
-from empUser import EmpUser
-from wfcUser import WFCUser
-from bayesUser import BayesUser
+from chiuser import ChiUser
+from empuser import EmpUser
+from customempuser import CustomEmpUser
+from wfcuser import WFCUser
+from bayesuser import BayesUser
 import emoji2vector
 import os
-import getEmojis
+import getemojis
 
 
 def create_app():
@@ -38,7 +39,9 @@ def create_app():
                     person = EmpUser(username)
                 if algorithm in "bayes":
                     person = BayesUser(username)
-                analyzeUser.analyze_user(person, num_tweets, new_tweets)
+                if algorithm in "custom":
+                    person = CustomEmpUser(username)
+                analyzeuser.analyze_user(person, num_tweets, new_tweets)
                 top_interests = User.top_n_interests(person, num_interests)
                 result = []
                 for interest in top_interests:
@@ -75,8 +78,11 @@ def create_app():
                 if algorithm in "bayes":
                     user1 = BayesUser(user1)
                     user2 = BayesUser(user2)
-                analyzeUser.analyze_user(user1, num_tweets, new_tweets)
-                analyzeUser.analyze_user(user2, num_tweets, new_tweets)
+                if algorithm in "custom":
+                    user1 = CustomEmpUser(user1)
+                    user2 = CustomEmpUser(user2)
+                analyzeuser.analyze_user(user1, num_tweets, new_tweets)
+                analyzeuser.analyze_user(user2, num_tweets, new_tweets)
                 similar_interests = User.find_similar_interests(user1, user2, num_interests)
                 for interest in similar_interests:
                     score = similar_interests[interest]
@@ -97,7 +103,7 @@ def create_app():
             if os.path.exists(filename):
                 return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
             else:
-                getEmojis.get_emojis(emoji)
+                getemojis.get_emojis(emoji)
                 return send_file(f"data/emojis/{emoji}.png", mimetype="image/png")
 
     class NearestEmojisRequest(Resource):

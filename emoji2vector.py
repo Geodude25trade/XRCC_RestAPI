@@ -5,7 +5,7 @@ from csv import reader
 from gensim import downloader
 import numpy as np
 from gensim.models import KeyedVectors
-import getEmojis
+import getemojis
 
 
 def get_vector(words):
@@ -33,7 +33,7 @@ def train_emoji_vectors():
                 emoji = '-'.join(emoji)
                 codes.append(emoji)
 
-    getEmojis.get_emojis(codes)
+    getemojis.get_emojis(codes)
     emoji_vectors = {}
     for code in codes:
         vector = get_vector(code)
@@ -56,6 +56,23 @@ def find_closest_emoji(word, num):
         return emoji_vector_model.similar_by_vector(vector, topn=num)
     else:
         return None
+
+
+def get_distances(words):
+    distances = []
+    word_pairs = []
+    good_words = []
+    for word in words:
+        if word in word2vec_model300.vocab:
+            good_words.append(word)
+    for word1 in good_words:
+        for word2 in good_words:
+            pair = {word1, word2}
+            if pair not in word_pairs and len(pair) == 2:
+                word_pairs.append(pair)
+    for pair in word_pairs:
+        distances.append(word2vec_model300.similarity(pair.pop(), pair.pop()))
+    return distances
 
 
 word2vec_model300 = downloader.load('word2vec-google-news-300')
